@@ -1,0 +1,26 @@
+[theme]
+primaryColor = "#4F46E5"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[server]
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[ui]
+hideTopBar = true
+
+[credentials]
+# Exemplo de credenciais - Substitua com suas próprias credenciais
+[[credentials.users]]
+username = "admin"
+password = "admin123"
+
+[[credentials.users]]
+username = "user"
+password = "user123"
