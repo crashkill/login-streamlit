@@ -166,11 +166,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Configurações do Supabase
-SUPABASE_URL = "https://zgdmuerecyrbcjbarltn.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZG11ZXJlY3lyYmNqYmFybHRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTAzNzE2NzAsImV4cCI6MjAyNTk0NzY3MH0.qWB6TL9eoDcAMouyZO9HP-0H-YJEcSl1zu9ktGeTv9k"
-
-# Inicializar cliente Supabase
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase_client = create_client(
+    supabase_url=st.secrets["SUPABASE_URL"],
+    supabase_key=st.secrets["SUPABASE_KEY"]
+)
 
 # Função para carregar usuários do arquivo TOML
 def load_users():
@@ -191,7 +190,7 @@ def check_local_credentials(username, password):
 # Função para verificar credenciais no Supabase
 def check_supabase_credentials(email, password):
     try:
-        res = supabase.auth.sign_in_with_password({
+        res = supabase_client.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
