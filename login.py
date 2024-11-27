@@ -99,68 +99,47 @@ st.markdown("""
     /* Estilos do botão */
     .stButton>button {
         width: 100%;
-        background-color: #4F46E5;
-        color: white;
-        border-radius: 0.375rem;
-        padding: 0.75rem 1rem;
-        border: none;
-        font-weight: 600;
-        transition: all 0.2s ease-in-out;
-        margin-top: 1rem;
+        height: 42px;
+        background-color: #4F46E5 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 0.5rem !important;
+        font-weight: 500 !important;
+        font-size: 1rem !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease-in-out !important;
     }
+
     .stButton>button:hover {
-        background-color: #4338CA;
-        transform: translateY(-1px);
+        background-color: #4338CA !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    /* Container centralizado */
-    .centered-container {
-        max-width: 400px;
-        margin: 2rem auto;
-        padding: 2rem;
-        background-color: white;
-        border-radius: 1rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Estilo para o radio button */
-    .stRadio>div {
-        background-color: #F9FAFB;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    /* Título e subtítulo */
-    h1 {
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        color: #111827;
-        margin-bottom: 1rem !important;
-        text-align: center;
-    }
-    .subtitle {
-        color: #6B7280;
-        text-align: center;
-        margin-bottom: 2rem;
-        font-size: 1.1rem;
     }
 
     /* Form container */
     .form-container {
+        padding: 1rem;
         background-color: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin-top: 1rem;
+        border-radius: 1rem;
     }
 
-    /* Labels dos inputs */
-    .stTextInput>label {
-        color: #374151 !important;
-        font-weight: 500 !important;
-        font-size: 0.95rem !important;
-        margin-bottom: 0.5rem !important;
+    /* Centralizar título */
+    .title-container {
+        text-align: center !important;
+        margin: 0 auto 2rem auto !important;
+        max-width: 800px !important;
+    }
+    
+    .title-container h1 {
+        text-align: center !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+
+    /* Ajuste do container principal */
+    .main-content {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 0 2rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -200,58 +179,69 @@ def check_supabase_credentials(email, password):
         return False
 
 # Interface do usuário
-st.markdown('<div class="centered-container">', unsafe_allow_html=True)
+# Container principal para centralizar todo o conteúdo
+st.markdown('<div class="main-content">', unsafe_allow_html=True)
 
-# Carregar e exibir a animação Lottie
-lottie_url = "https://assets3.lottiefiles.com/packages/lf20_06a6pf9i.json"
-lottie_animation = load_lottieurl(lottie_url)
-
-if lottie_animation is not None:
-    st_lottie(
-        lottie_animation,
-        height=180,
-        key="financial_animation"
-    )
-
+# Container para centralizar o título
+st.markdown('<div class="title-container">', unsafe_allow_html=True)
 st.title("🔐 Login")
-st.markdown('<p class="subtitle">Faça login para acessar o sistema</p>', unsafe_allow_html=True)
-
-# Tabs para escolher o método de autenticação
-auth_method = st.radio("Escolha o método de autenticação:", ["Local", "Supabase"], horizontal=True)
-
-if auth_method == "Local":
-    with st.form("login_form_local", clear_on_submit=True):
-        st.markdown('<div class="form-container">', unsafe_allow_html=True)
-        username = st.text_input("👤 Usuário", placeholder="Digite seu usuário")
-        password = st.text_input("🔒 Senha", type="password", placeholder="Digite sua senha")
-        submit = st.form_submit_button("Entrar")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        if submit:
-            if check_local_credentials(username, password):
-                st.session_state["authenticated"] = True
-                st.success("Login realizado com sucesso!")
-                switch_page("home")
-            else:
-                st.error("Credenciais inválidas!")
-
-else:
-    with st.form("login_form_supabase", clear_on_submit=True):
-        st.markdown('<div class="form-container">', unsafe_allow_html=True)
-        email = st.text_input("📧 E-mail", placeholder="Digite seu e-mail")
-        password = st.text_input("🔒 Senha", type="password", placeholder="Digite sua senha")
-        submit = st.form_submit_button("Entrar")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        if submit:
-            if check_supabase_credentials(email, password):
-                st.session_state["authenticated"] = True
-                st.success("Login realizado com sucesso!")
-                switch_page("home")
-            else:
-                st.error("Credenciais inválidas!")
-
 st.markdown('</div>', unsafe_allow_html=True)
+
+# Create two columns for the main content
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    # Tabs para escolher o método de autenticação
+    auth_method = st.radio("Escolha o método de autenticação:", ["Local", "Supabase"], horizontal=True)
+
+    if auth_method == "Local":
+        with st.form("login_form_local", clear_on_submit=True):
+            st.markdown('<div class="form-container">', unsafe_allow_html=True)
+            username = st.text_input("👤 Usuário", placeholder="Digite seu usuário")
+            password = st.text_input("🔒 Senha", type="password", placeholder="Digite sua senha")
+            submit = st.form_submit_button("Entrar")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            if submit:
+                if check_local_credentials(username, password):
+                    st.session_state["authenticated"] = True
+                    st.success("Login realizado com sucesso!")
+                    switch_page("home")
+                else:
+                    st.error("Credenciais inválidas!")
+
+    else:
+        with st.form("login_form_supabase", clear_on_submit=True):
+            st.markdown('<div class="form-container">', unsafe_allow_html=True)
+            email = st.text_input("📧 E-mail", placeholder="Digite seu e-mail")
+            password = st.text_input("🔒 Senha", type="password", placeholder="Digite sua senha")
+            submit = st.form_submit_button("Entrar")
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            if submit:
+                if check_supabase_credentials(email, password):
+                    st.session_state["authenticated"] = True
+                    st.success("Login realizado com sucesso!")
+                    switch_page("home")
+                else:
+                    st.error("Credenciais inválidas!")
+
+with col2:
+    # Add some vertical spacing to align with the form
+    st.markdown("<div style='padding-top: 3.5rem;'></div>", unsafe_allow_html=True)
+    
+    # Carregar e exibir a animação Lottie
+    lottie_url = "https://assets3.lottiefiles.com/packages/lf20_06a6pf9i.json"
+    lottie_animation = load_lottieurl(lottie_url)
+
+    if lottie_animation is not None:
+        st_lottie(
+            lottie_animation,
+            height=250,
+            key="financial_animation"
+        )
+
+st.markdown('</div>', unsafe_allow_html=True)  # Close main-content div
 
 st.markdown("""
 <div style='position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 1rem; background-color: #F9FAFB; border-top: 1px solid #E5E7EB;'>
