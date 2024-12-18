@@ -1,29 +1,33 @@
 [theme]
-primaryColor="#4F46E5"
-backgroundColor="#FFFFFF"
-secondaryBackgroundColor="#F3F4F6"
-textColor="#111827"
-font="sans serif"
+primaryColor = "#4F46E5"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F3F4F6"
+textColor = "#111827"
+font = "sans serif"
 
 [server]
-enableXsrfProtection=true
-enableCORS=true
+enableXsrfProtection = true
+enableCORS = true
 
 [credentials]
 [[credentials.users]]
 username = "admin"
-password = "admin123"
+password = "$2b$12$aQ5LdAIF7u14uuaErYRApeKBcgugRq.4nQjAj0RD07eXpCrzHgbSe"
 
 [[credentials.users]]
 username = "user"
-password = "user123"
+password = "$2b$12$jpY9MV0iRVDiF9R5QoIyHe6ZWiPQE7zXy0j7dsl9WlqLLQO50yj.W"
+
+[[credentials.users]]
+username = "admin"
+password = "$2b$12$6bktTZXSV3L6B.65B288.eMkzIOpSZtGujx2IfQRda7TCVcvcs6r6"
 
 [browser]
-gatherUsageStats=false
+gatherUsageStats = false
 
 [ui]
-hideTopBar=false
+hideTopBar = false
 
 [client]
-toolbarMode="minimal"
-showSidebarNavigation=false
+toolbarMode = "minimal"
+showSidebarNavigation = false

@@ -85,6 +85,9 @@ streamlit run login.py
 
 ## 🔒 Segurança
 
+- **Aviso**: Não armazene informações sensíveis, como senhas, em texto simples. Utilize variáveis de ambiente ou um cofre seguro para armazenar credenciais.
+- **Exemplo de Uso**: Após iniciar o aplicativo, você pode fazer login usando as credenciais fornecidas. O painel de controle exibirá suas estatísticas de uso.
+
 - Múltiplos métodos de autenticação
 - Credenciais locais armazenadas em arquivo seguro
 - Integração com Supabase para autenticação robusta

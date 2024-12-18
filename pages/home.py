@@ -6,7 +6,7 @@ from streamlit.runtime.runtime import Runtime
 st.set_page_config(
     page_title="Home",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Ocultar menu hamburguer e rodapé
@@ -14,16 +14,46 @@ st.markdown("""
 <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    .stDeployButton {display:none;}
     header {visibility: hidden;}
     #stDecoration {display:none}
 </style>
 """, unsafe_allow_html=True)
 
+# Função fictícia para buscar estatísticas
+def fetch_statistics():
+    return {
+        "active_users": 150,
+        "success_rate": "85%",
+        "availability": "24/7"
+    }
+
 # Verificar autenticação
 if "authenticated" not in st.session_state or not st.session_state["authenticated"]:
     st.error("Por favor, faça login para acessar esta página")
     st.stop()
+
+# Atualizar a seção de estatísticas
+stats = fetch_statistics()
+
+# Grid de estatísticas
+st.markdown("""
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{}</div>
+        <div class="stat-label">Usuários Ativos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{}</div>
+        <div class="stat-label">Taxa de Sucesso</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{}</div>
+        <div class="stat-label">Disponibilidade</div>
+    </div>
+</div>
+""".format(stats["active_users"], stats["success_rate"], stats["availability"]), unsafe_allow_html=True)
+
+# Remove the logout button from the main interface
 
 # CSS personalizado
 st.markdown("""
@@ -37,6 +67,8 @@ st.markdown("""
         border: none;
         font-weight: 500;
         transition: all 0.2s ease-in-out;
+        width: 100%;  
+        margin-bottom: 0.5rem;  
     }
     .stButton>button:hover {
         background-color: #DC2626;
@@ -77,8 +109,34 @@ st.markdown("""
         color: #6B7280;
         font-size: 0.875rem;
     }
+    /* Estilo para o título da sidebar */
+    .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-bottom: 2px solid #E5E7EB;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# Sidebar com Ações Rápidas
+with st.sidebar:
+    st.markdown('<div class="sidebar-title">⚡ Menu</div>', unsafe_allow_html=True)
+# Remover o botão "Executar Streamlit"
+    st.button("📊 Ver Relatórios")
+    st.button("👥 Gerenciar Usuários")
+    if st.button("⚙️ Configurações"):
+        st.session_state["page"] = "configuracoes"
+        st.experimental_rerun()
+    st.button("⚙️ Configurações")
+    
+    # Espaçamento antes do botão de logout
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🚪 Logout", key="logout_sidebar"):
+        st.session_state["authenticated"] = False
+        st.switch_page("login.py")
 
 # Interface do usuário
 st.markdown('<div class="home-container">', unsafe_allow_html=True)
@@ -112,27 +170,5 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# Seção de ações rápidas
-st.markdown("""
-<h2 style='font-size: 1.5rem; font-weight: 600; color: #111827; margin: 2rem 0 1rem;'>
-    ⚡ Ações Rápidas
-</h2>
-""", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.button("📊 Ver Relatórios")
-with col2:
-    st.button("👥 Gerenciar Usuários")
-with col3:
-    st.button("⚙️ Configurações")
-
-# Botão de logout
-st.markdown("<br>", unsafe_allow_html=True)
-if st.button("🚪 Logout"):
-    st.session_state["authenticated"] = False
-    st.switch_page("login.py")
 
 st.markdown('</div>', unsafe_allow_html=True)

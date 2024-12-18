@@ -25,10 +25,12 @@ import streamlit as st
 import toml
 from supabase import create_client, Client
 import os
+import time
 from streamlit_extras.switch_page_button import switch_page
 import base64
 from streamlit_lottie import st_lottie
 import requests
+import bcrypt
 
 # Função para carregar animação Lottie
 def load_lottieurl(url: str):
@@ -58,7 +60,18 @@ st.markdown("""
 # CSS personalizado
 st.markdown("""
 <style>
-    /* Estilos para o input e sua div container */
+    body {
+        font-family: 'Arial', sans-serif;
+    }
+    .error-message {
+        color: red;
+        font-weight: bold;
+    }
+    .loading-indicator {
+        display: none;
+        text-align: center;
+        margin: 1rem 0;
+    }
     div[data-baseweb="base-input"] {
         background-color: #F9FAFB !important;
         border: 1px solid #E5E7EB !important;
@@ -69,12 +82,10 @@ st.markdown("""
         display: flex !important;
         align-items: center !important;
     }
-
     div[data-baseweb="base-input"]:focus-within {
         border-color: #4F46E5 !important;
         box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
     }
-
     div[data-baseweb="base-input"] input {
         background-color: transparent !important;
         border: none !important;
@@ -85,18 +96,14 @@ st.markdown("""
         width: 100% !important;
         line-height: 42px !important;
     }
-
     div[data-baseweb="base-input"] input:focus {
         box-shadow: none !important;
         outline: none !important;
     }
-
     div[data-baseweb="base-input"] input::placeholder {
         color: #9CA3AF !important;
         line-height: 42px !important;
     }
-
-    /* Estilos do botão */
     .stButton>button {
         width: 100%;
         height: 42px;
@@ -109,33 +116,25 @@ st.markdown("""
         cursor: pointer !important;
         transition: all 0.2s ease-in-out !important;
     }
-
     .stButton>button:hover {
         background-color: #4338CA !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-
-    /* Form container */
     .form-container {
         padding: 1rem;
         background-color: white;
         border-radius: 1rem;
     }
-
-    /* Centralizar título */
     .title-container {
         text-align: center !important;
         margin: 0 auto 2rem auto !important;
         max-width: 800px !important;
     }
-    
     .title-container h1 {
         text-align: center !important;
         margin: 0 auto !important;
         display: block !important;
     }
-
-    /* Ajuste do container principal */
     .main-content {
         max-width: 1200px !important;
         margin: 0 auto !important;
@@ -158,13 +157,72 @@ def load_users():
     except:
         return []
 
-# Função para verificar credenciais locais
-def check_local_credentials(username, password):
-    users = load_users()
-    return any(
-        user["username"] == username and user["password"] == password
-        for user in users
-    )
+login_attempts = {}  # Inicializa o dicionário para rastrear tentativas de login
+
+def register_user(username, password):
+    """Registra um novo usuário e armazena suas credenciais."""
+    store_user_credentials(username, password)
+    st.success("Usuário registrado com sucesso!")
+
+# Função para re-hash as senhas existentes
+def rehash_existing_passwords():
+    config = toml.load(".streamlit/config.toml")
+    users = config.get("credentials", {}).get("users", [])
+    for user in users:
+        if not user["password"].startswith("$2b$"):  # Se a senha não estiver hashada
+            user["password"] = bcrypt.hashpw(user["password"].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    config["credentials"]["users"] = users
+    with open(".streamlit/config.toml", "w") as f:
+        toml.dump(config, f)
+
+# Chama a função para re-hash as senhas existentes ao iniciar o script
+rehash_existing_passwords()
+
+# Função para verificar credenciais locais e Supabase
+def authenticate_user(method, username=None, email=None, password=None):
+    global login_attempts
+    current_time = time.time()
+    
+    # Limitação de taxa
+    if username in login_attempts:
+        if login_attempts[username]['count'] >= 5 and (current_time - login_attempts[username]['timestamp'] < 300):
+            st.error("Muitas tentativas de login. Tente novamente mais tarde.")
+            return False
+        else:
+            login_attempts[username]['count'] += 1
+    else:
+        login_attempts[username] = {'count': 1, 'timestamp': current_time}
+    
+    if method == "Local":
+        users = load_users()
+        for user in users:
+            if user["username"] == username:
+                if user["password"] is not None and bcrypt.checkpw(password.encode('utf-8'), user["password"].encode('utf-8')):
+                    return True
+                else:
+                    st.error("Senha incorreta!")
+                    return False
+        st.error("Usuário não encontrado!")
+        return False
+    elif method == "Supabase":
+        return check_supabase_credentials(email, password)
+
+# Função para armazenar credenciais locais
+def store_user_credentials(username, password):
+    # Verifica se a senha já está hashada
+    if not password.startswith("$2b$"):
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    else:
+        hashed = password.encode('utf-8')  # Mantém a senha já hashada
+    try:
+        config = toml.load(".streamlit/config.toml")
+        users = config.get("credentials", {}).get("users", [])
+        users.append({"username": username, "password": hashed.decode('utf-8')})
+        config["credentials"]["users"] = users
+        with open(".streamlit/config.toml", "w") as f:
+            toml.dump(config, f)
+    except Exception as e:
+        st.error(f"Erro ao armazenar credenciais: {str(e)}")
 
 # Função para verificar credenciais no Supabase
 def check_supabase_credentials(email, password):
@@ -179,7 +237,6 @@ def check_supabase_credentials(email, password):
         return False
 
 # Interface do usuário
-# Container principal para centralizar todo o conteúdo
 st.markdown('<div class="main-content">', unsafe_allow_html=True)
 
 # Container para centralizar o título
@@ -203,12 +260,15 @@ with col1:
             st.markdown('</div>', unsafe_allow_html=True)
             
             if submit:
-                if check_local_credentials(username, password):
-                    st.session_state["authenticated"] = True
-                    st.success("Login realizado com sucesso!")
-                    switch_page("home")
+                if username and password:
+                    if authenticate_user("Local", username=username, password=password):
+                        st.session_state["authenticated"] = True
+                        st.success("Login realizado com sucesso!")
+                        switch_page("home")
+                    else:
+                        st.error("Credenciais inválidas!")
                 else:
-                    st.error("Credenciais inválidas!")
+                    st.error("Por favor, preencha todos os campos.")
 
     else:
         with st.form("login_form_supabase", clear_on_submit=True):
@@ -219,12 +279,18 @@ with col1:
             st.markdown('</div>', unsafe_allow_html=True)
             
             if submit:
-                if check_supabase_credentials(email, password):
-                    st.session_state["authenticated"] = True
-                    st.success("Login realizado com sucesso!")
-                    switch_page("home")
+                if email and password:
+                    if authenticate_user("Supabase", email=email, password=password):
+                        st.session_state["authenticated"] = True
+                        st.success("Login realizado com sucesso!")
+                        switch_page("home")
+                    else:
+                        st.error("Credenciais inválidas!")
                 else:
-                    st.error("Credenciais inválidas!")
+                    st.error("Por favor, preencha todos os campos.")
+
+        # Adicionar botão "Esqueci minha senha"
+        st.markdown("<a href='#' style='color: #4F46E5;'>Esqueci minha senha</a>", unsafe_allow_html=True)
 
 with col2:
     # Add some vertical spacing to align with the form
@@ -242,9 +308,3 @@ with col2:
         )
 
 st.markdown('</div>', unsafe_allow_html=True)  # Close main-content div
-
-st.markdown("""
-<div style='position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 1rem; background-color: #F9FAFB; border-top: 1px solid #E5E7EB;'>
-    <p style='color: #6B7280; font-size: 0.875rem;'> 2024 Seu Sistema. Todos os direitos reservados.</p>
-</div>
-""", unsafe_allow_html=True)
