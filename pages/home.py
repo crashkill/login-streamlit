@@ -9,15 +9,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Ocultar menu hamburguer e rodapé
-st.markdown("""
-<style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    #stDecoration {display:none}
-</style>
-""", unsafe_allow_html=True)
+# # Ocultar menu hamburguer e rodapé
+# st.markdown("""
+# <style>
+#     #MainMenu {visibility: hidden;}
+#     footer {visibility: hidden;}
+#     header {visibility: hidden;}
+#     #stDecoration {display:none}
+# </style>
+# """, unsafe_allow_html=True)
 
 # Função fictícia para buscar estatísticas
 def fetch_statistics():
@@ -127,10 +127,9 @@ with st.sidebar:
 # Remover o botão "Executar Streamlit"
     st.button("📊 Ver Relatórios")
     st.button("👥 Gerenciar Usuários")
-    if st.button("⚙️ Configurações"):
+    if st.button("⚙️ Configurações", key="settings_button"):
         st.session_state["page"] = "configuracoes"
-        st.experimental_rerun()
-    st.button("⚙️ Configurações")
+        st.switch_page("pages\configuracoes.py")
     
     # Espaçamento antes do botão de logout
     st.markdown("<br>", unsafe_allow_html=True)
